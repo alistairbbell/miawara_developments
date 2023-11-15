@@ -153,7 +153,7 @@ with open(save_filename, 'w') as f:
     f.write("#Data extracted from yearly differences \
             \n#in MLS data \n1 \n")
 
-df.to_csv(save_filename, mode='a', index=False, sep=' ')
+#df.to_csv(save_filename, mode='a', index=False, sep=' ')
 
 
 #%%save inflated file to csv
@@ -168,6 +168,35 @@ with open(save_filename, 'w') as f:
     f.write("#Data extracted from yearly differences \
             \n#in MLS data \n1 \n")
 
-df.to_csv(save_filename, mode='a', index=False, sep=' ')
+#df.to_csv(save_filename, mode='a', index=False, sep=' ')
+#%%
+mean_smoothed  = np.mean(df['2'][df['120']<3000])
+scaled = mean_smoothed+  .5 * (df['2'] -  mean_smoothed)
+df['2'] = scaled
 
+save_filename = os.path.join(data_file, 'prior_errors_double_scaled.aa')
+with open(save_filename, 'w') as f:
+    f.write("#Data extracted from yearly differences \
+            \n#in MLS data \n1 \n")
+#df.to_csv(save_filename, mode='a', index=False, sep=' ')
+#%%
 
+# Plotting
+plt.figure(figsize=(6, 8))
+plt.plot(q_std_yearly*1e6, P_mean/100,  'o-', label='MLS Data')
+plt.plot(data_interpolated*1e6,pressure_dense/100, '--', label='Interpolated')
+plt.plot(data_smoothed*1e6, pressure_dense/100,  '-', label='Smoothed')
+plt.plot(scaled[::-1]*1e6, pressure_dense/100,  '-', label='Scaled')
+
+plt.gca().invert_yaxis()  # Typically pressure decreases with height
+plt.legend(fontsize = 12)
+plt.yscale('log')
+plt.xlim([0,15e-1])
+plt.ylim([1e3,1e-4])
+
+plt.ylabel("Pressure (hPa)", fontsize = 12)
+plt.xlabel("q Err (PPMv)",fontsize = 12)
+plt.grid()
+plt.savefig(os.path.join(fig_file, 'a_priori_with_scaled.pdf'), format  = 'pdf', \
+            dpi = 300, bbox_inches = 'tight')
+plt.show()
