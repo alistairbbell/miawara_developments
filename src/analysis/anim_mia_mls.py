@@ -2,9 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 Created on Mon Nov  6 11:36:36 2023
-
 Author: Alistair Bell
-
 Contact: alistair.bell@unibe.ch
 """
 
@@ -30,7 +28,6 @@ from matplotlib.animation import PillowWriter
 import matplotlib.colors as colors
 import matplotlib.ticker as ticker
 from scipy import interpolate
-
 from matplotlib.animation import FuncAnimation
 
 #%% paths
@@ -46,7 +43,6 @@ miawara_Filename = 'MIAWARA_concat_H2O_2010_2023_rescaled_inc_A.nc'
 MLS_fullpath = os.path.join(interim_dir, MLS_Bern_Filename)
 miawara_old_fullpath = os.path.join(interim_dir, miawara_Filename_old)
 miawara_fullpath = os.path.join(interim_dir, miawara_Filename)
-
 
 #%%load dataset
 MLS_xr = xr.load_dataset(MLS_fullpath)
@@ -64,7 +60,6 @@ pressure  = miawara_xr.pressure.values
 #dt_64 = [np.datetime64(i).astype('datetime64[D]') for i in datetimes_mw]
 q  = miawara_running.q.values
 q_a = miawara_running.q_a.values
-
 
 #%% function definitions
 def conv( x_t, x_a , A ):
