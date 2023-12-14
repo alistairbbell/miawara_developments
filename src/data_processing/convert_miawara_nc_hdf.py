@@ -14,8 +14,8 @@ from  nc_to_hdf import *
 
 #%% paths
 server_basepath = '//storage/tub/instruments/miawara/l2/l2_scaled_hdf_fields/'
-outdir = '/home/alistair/miawara_reprocessing/data/tmp/'
-metadata_filepath = '/home/alistair/miawara_reprocessing/additional_files/groundbased_mwr.h2o_ubern112_final_bern___002.meta'
+outdir = '/storage/tub/instruments/miawara/l2/NDACC/'
+metadata_filepath = '../../additional_files/groundbased_mwr.h2o_ubern112_final_bern___002.meta'
 
 #%% define global attributes and variable attributes common to all observations
 global_atts = parse_metadata_file(metadata_filepath)
@@ -24,11 +24,9 @@ variable_atts = parse_meta_file(metadata_filepath)
 #%%load all nc files
 nc_files = [file for year in np.arange(2010, 2024) 
                 for file in glob.glob(os.path.join(server_basepath, str(year), '*.nc'))]
-    
-
 #%% iterate through files, generate hdf
 
-for filefullpath in nc_files[:3]:
+for filefullpath in nc_files:
     
     in_filename = os.path.basename(filefullpath)
     date_str = in_filename.split('_')[1].split('.')[0]
@@ -57,7 +55,12 @@ for filefullpath in nc_files[:3]:
     ]
     # Concatenating the version and file extension
     filename = '_'.join(filename_lst).lower()
-    outpath = os.path.join(outdir, filename)
+    subpath = os.path.join(outdir,str(date_time_obj.year))
+    
+    if not os.path.exists(subpath):
+        os.makedirs(subpath)  
+    
+    outpath = os.path.join(subpath, filename)
     
     #add attributes depending on filename and metadata
     global_atts['FILE_NAME'] = os.path.basename(outpath)

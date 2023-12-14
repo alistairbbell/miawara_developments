@@ -22,6 +22,8 @@ os.chdir(script_directory)
 
 #%% paths
 server_basepath = '//storage/tub/instruments/miawara/l2/l2_scaled/'
+meta_file_path = '/home/ab22l909/MIAWARA_reprocessing_analysis/additional_files/groundbased_mwr.h2o_ubern112_final_bern___002.meta'
+
 
 # Define custom global attributes
 global_attributes = {
@@ -40,11 +42,6 @@ global_attributes = {
     'DS_ADDRESS': 'Sidlerstrasse 5, 3012 Bern; Switzerland',
     'DS_EMAIL': 'alistair.bell@unibe.ch'
     }
-    
-global_dataset_attributes = {
-    'DATA_DESCRIPTION': 'Daily H2O retrieved from microwave radiometer in Zimmerwald, Bern, CH',
-    'DATA_DISCIPLINE': 'ATMOSPHERIC.CHEMISTRY;REMOTE.SENSING;GROUNDBASED',
-}
 
 
 # Function to parse the .meta file
@@ -67,11 +64,6 @@ def parse_meta_file(meta_file_path):
 def add_attributes_to_hdf5(hdf5_file, attributes):
     for key, value in attributes.items():
         hdf5_file.attrs[key] = value
-
-# Change directory to the script's directory
-absolute_script_path = os.path.abspath(__file__)
-script_directory = os.path.dirname(absolute_script_path)
-os.chdir(script_directory)
 
 # paths
 server_basepath = '//storage/tub/instruments/miawara/l2/l2_scaled/'
