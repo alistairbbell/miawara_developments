@@ -14,8 +14,8 @@ from  nc_to_hdf import *
 
 #%% paths
 server_basepath = '//storage/tub/instruments/miawara/l2/l2_scaled_hdf_fields/'
-outdir = '/home/alistair/miawara_reprocessing/data/tmp/'
-metadata_filepath = '/home/alistair/miawara_reprocessing/additional_files/groundbased_mwr.h2o_ubern112_final_bern___002.meta'
+outdir = '/storage/tub/instruments/miawara/l2/NDACC_v2/'
+metadata_filepath = '../../additional_files/groundbased_mwr.h2o_ubern112_final_bern___002.meta'
 
 #%% define global attributes and variable attributes common to all observations
 global_atts = parse_metadata_file(metadata_filepath)
@@ -24,49 +24,57 @@ variable_atts = parse_meta_file(metadata_filepath)
 #%%load all nc files
 nc_files = [file for year in np.arange(2010, 2024) 
                 for file in glob.glob(os.path.join(server_basepath, str(year), '*.nc'))]
-    
-
 #%% iterate through files, generate hdf
 
-for filefullpath in nc_files[:3]:
-    
-    in_filename = os.path.basename(filefullpath)
-    date_str = in_filename.split('_')[1].split('.')[0]
-    date_time_obj = dt.datetime.strptime(date_str, '%Y%m%d%H%M')
-    
-    startdate = date_time_obj.replace(hour=0, minute=0, second=0, microsecond=0)
-    enddate = date_time_obj.replace(hour=23, minute=59, second=59, microsecond=0)
-    
-    #load the netcdf file
-    dataset = Dataset(filefullpath)
-    data_dict = extract_attributes(dataset)
-        
-    #input daily global attributes
-    global_atts['DATA_START_DATE'] = datetime_to_stringDate(startdate)
-    global_atts['DATA_STOP_DATE'] = datetime_to_stringDate(enddate)
-    global_atts['FILE_GENERATION_DATE'] = datetime_to_stringDate(dt.datetime.now())
-    
-    #generate filename from metadata and date
-    filename_lst = [
-        str(global_atts['DATA_DISCIPLINE']).split(';')[2],
-        str(global_atts['DATA_SOURCE']),
-        str(global_atts['DATA_LOCATION']),
-        str(global_atts['DATA_START_DATE']),
-        str(global_atts['DATA_STOP_DATE']),
-        str(global_atts['DATA_FILE_VERSION']) + '.hdf' 
-    ]
-    # Concatenating the version and file extension
-    filename = '_'.join(filename_lst).lower()
-    outpath = os.path.join(outdir, filename)
-    
-    #add attributes depending on filename and metadata
-    global_atts['FILE_NAME'] = os.path.basename(outpath)
-    
-    varlist = [key for key, item in data_dict.items()]
-    global_atts['DATA_VARIABLES'] = ';'.join(str(item) for item in varlist)
-    
-    #write the 
-    write_hdf_from_nc(outpath, global_atts, variable_atts, data_dict)
+for filefullpath in nc_files:
+
+	in_filename = os.path.basename(filefullpath)
+	date_str = in_filename.split('_')[1].split('.')[0]
+	date_time_obj = dt.datetime.strptime(date_str, '%Y%m%d%H%M')
+	print(date_time_obj)	    
+	startdate = date_time_obj.replace(hour=0, minute=0, second=0, microsecond=0)
+	enddate = date_time_obj.replace(hour=23, minute=59, second=59, microsecond=0)
+
+	try:
+		#load the netcdf file
+		dataset = Dataset(filefullpath)
+		data_dict = extract_attributes(dataset)
+			
+		#input daily global attributes
+		global_atts['DATA_START_DATE'] = datetime_to_stringDate(startdate)
+		global_atts['DATA_STOP_DATE'] = datetime_to_stringDate(enddate)
+		global_atts['FILE_GENERATION_DATE'] = datetime_to_stringDate(dt.datetime.now())
+		
+		#generate filename from metadata and date
+		filename_lst = [
+			str(global_atts['DATA_DISCIPLINE']).split(';')[2],
+			str(global_atts['DATA_SOURCE']),
+			str(global_atts['DATA_LOCATION']),
+			str(global_atts['DATA_START_DATE']),
+			str(global_atts['DATA_STOP_DATE']),
+    		str(global_atts['DATA_FILE_VERSION']) + '.hdf' 
+		]
+
+		# Concatenating the version and file extension
+		filename = '_'.join(filename_lst).lower()
+		subpath = os.path.join(outdir,str(date_time_obj.year))
+
+		if not os.path.exists(subpath):
+			os.makedirs(subpath)  
+
+		outpath = os.path.join(subpath, filename)
+
+		#add attributes depending on filename and metadata
+		global_atts['FILE_NAME'] = os.path.basename(outpath)
+
+		varlist = [key for key, item in data_dict.items()]
+		global_atts['DATA_VARIABLES'] = ';'.join(str(item) for item in varlist)
+
+		#write the 
+		write_hdf_from_nc(outpath, global_atts, variable_atts, data_dict)
+
+	except:
+		print('An error for the hdf file generation on: {}'.format(date_time_obj.strftime("%d/%m/%Y")))
 
 #%% code to check the file
 # hdf4_file_path = outpath

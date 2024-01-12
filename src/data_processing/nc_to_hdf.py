@@ -256,7 +256,7 @@ def write_hdf_from_nc(outpath, global_atts, variable_atts, data_dict):
             # Set float attribute
             attr.set(SDC.FLOAT64, [value])
     for key, value in data_dict.items():
-        print(key)
+    #    print(key)
        
         tempdict = variable_atts[key]
         datatype = tempdict['VAR_DATA_TYPE']
