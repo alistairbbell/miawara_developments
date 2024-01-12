@@ -6,12 +6,28 @@ Created on Tue Nov 28 15:13:37 2023
 Author: Alistair Bell
 
 Contact: alistair.bell@unibe.ch
+
+Description: Significance testing for the 1D Wavelet transform wavelet
+codes for running wavelet analysis translated from maltab from 
+scripts written by C. Torrence. 
 """
 
 import numpy as np
 from scipy.stats import chi2
 
 def wave_signif(Y, dt, scale1, sigtest=-1, lag1=-1, siglvl=-1, dof=-1, mother=-1, param=-1):
+    """INPUTS:
+    Y = the time series, or, the VARIANCE of the time series.
+        (If this is a single number, it is assumed to be the variance...)
+    DT = amount of time between each Y value, i.e. the sampling time.
+    SCALE = the vector of scale indices, from previous call to WAVELET.
+    
+    OUTPUTS:
+    SIGNIF = significance levels as a function of SCALE
+    FFT_THEOR = output theoretical red-noise spectrum as fn of PERIOD
+    """
+
+
     if mother == -1:
         mother = "MORLET"
     mother = mother.upper()
@@ -38,7 +54,6 @@ def wave_signif(Y, dt, scale1, sigtest=-1, lag1=-1, siglvl=-1, dof=-1, mother=-1
         empir = [2., -1, -1, -1]
         if k0 == 6:
             empir[1:] = [0.776, 2.32, 0.60]
-    # Add similar blocks for 'PAUL' and 'DOG'
 
     period = scale * fourier_factor
     dofmin = empir[0]
