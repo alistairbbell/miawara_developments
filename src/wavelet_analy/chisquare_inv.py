@@ -21,6 +21,10 @@ def chisquare_inv(P, V):
     Returns:
     X: The value such that P*100 percent of the chi-square distribution
        with V degrees of freedom lies between 0 and X.
+       
+    Note
+    ----
+    This script is based on the matlab package from Torrence and Compo (1995-1998)
     """
 
     if P < 0 or P > 0.9999:

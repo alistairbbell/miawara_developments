@@ -43,7 +43,6 @@ miawara_Filename = 'MIAWARA_concat_H2O_2010_2023_rescaled_inc_A.nc'
 MLS_fullpath = os.path.join(interim_dir, MLS_Bern_Filename)
 miawara_old_fullpath = os.path.join(interim_dir, miawara_Filename_old)
 miawara_fullpath = os.path.join(interim_dir, miawara_Filename)
-
 #%%load dataset
 MLS_xr = xr.load_dataset(MLS_fullpath)
 miawara_xr = xr.load_dataset(miawara_fullpath, decode_times = False)
@@ -57,7 +56,7 @@ miawara_xr['time'] = dt_64
 MLS_running = MLS_xr.rolling(time=20, center=True).mean()
 miawara_running = miawara_xr.rolling(time=20, center=True).mean()
 pressure  = miawara_xr.pressure.values
-#dt_64 = [np.datetime64(i).astype('datetime64[D]') for i in datetimes_mw]
+
 q  = miawara_running.q.values
 q_a = miawara_running.q_a.values
 
@@ -78,8 +77,6 @@ other  = miawara_xr.q.values
 datetimes_mw = [dt.datetime(1970,1,1) + dt.timedelta(seconds = i) for i in miawara_xr.time.values]
 dt_64 = [np.datetime64(i) for i in datetimes_mw]
 miawara_xr['time'] =  dt_64
-
-
 datetimes_mw_old = [dt.datetime(1970,1,1) + dt.timedelta(seconds = i) for i in miawara_old_xr.time.values]
 dt_64_old = [np.datetime64(i) for i in datetimes_mw_old]
 miawara_old_xr['time'] =  dt_64_old

@@ -29,7 +29,6 @@ mydb = mysql.connect(
 )
 
 #%%
-
 host = "juno.mw.iap.unibe.ch"
 port = 22
 username = "miawara"
@@ -54,14 +53,11 @@ for a in dates[1:]:
     b = dt.datetime(int(a[:4]), int(a[5:7]), int(a[8:10]), int(a[11:13]), int(a[14:16]), int(a[17:18]) )
     datetimes.append(b)
     
-    
-    
 #%%
 
 ssh = paramiko.SSHClient()
 ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 ssh.connect(host, port, username, password)
-
 
 msql_cmd = 'SELECT profile_ID FROM level2_header WHERE profile_ID >= 50000 AND profile_ID <=440000;'
 base_command = 'mysql MIAWARA -e "{}"'.format(msql_cmd)

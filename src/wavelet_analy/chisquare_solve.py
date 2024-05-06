@@ -12,19 +12,33 @@ import scipy.special as sp
 
 def chisquare_solve(XGUESS, P, V):
     """
-    Internal function used by chisquare_inv.
-
-    Given XGUESS, a percentile P, and degrees-of-freedom V,
-    return the difference between calculated percentile and P.
-
-    Parameters:
-    XGUESS: The guessed value of X
-    P: The target probability
-    V: Degrees of freedom
-
-    Returns:
-    PDIFF: The absolute difference between the guessed probability
-           and the target probability P.
+    Calculates the difference between a target percentile and the estimated percentile 
+    in a chi-square distribution.
+    
+    This function is an internal component used by the 'chisquare_inv' function. It 
+    computes the discrepancy between a given percentile (P) and the percentile 
+    calculated using a guessed chi-square statistic value (XGUESS) under a specified 
+    number of degrees of freedom (V).
+    
+    Parameters
+    ----------
+    XGUESS: float
+        The estimated chi-square statistic value.
+    P: float
+        The target percentile in the chi-square distribution, expressed as a 
+        decimal (e.g., 0.95 for the 95th percentile).
+    V: int
+        The degrees of freedom in the chi-square distribution.
+    
+    Returns
+    -------
+    PDIFF: float
+        The absolute difference between the estimated percentile (calculated 
+        using XGUESS and V) and the target percentile P. This value represents 
+        the accuracy of XGUESS in estimating the percentile P.
+    Note
+    ----
+    This script is based on the matlab package from Torrence and Compo (1995-1998)
     """
 
     # Calculate the guessed probability using the incomplete gamma function

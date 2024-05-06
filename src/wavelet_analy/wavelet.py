@@ -71,6 +71,10 @@ def wavelet(Y, dt, pad=0, dj=0.25, s0=-1, J1=-1, mother='MORLET', param=-1):
         maximum period of useful information at that particular time. Periods 
         greater than this are subject to edge effects. This array has the same 
         length as the time series (N).
+        
+    Note
+    ----
+    This script is based on the matlab package from Torrence and Compo (1995-1998)
     """
 
     n1 = len(Y)

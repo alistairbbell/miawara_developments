@@ -3,6 +3,7 @@
 """
 Created on Wed Jan 10 15:29:38 2024
 
+
 Author: Alistair Bell
 
 Contact: alistair.bell@unibe.ch
@@ -36,6 +37,8 @@ s0 = 2 * dt
 j1 = int(7 / dj)
 lag1 = 0.72
 mother = 'Morlet'
+
+
 #%%
 # Wavelet transform
 wave, period, scale, coi = wavelet(sst, dt, pad, dj, s0, j1, mother)
@@ -59,9 +62,11 @@ scale_avg = power / scale_avg
 scale_avg = variance * dj * dt / Cdelta * np.sum(scale_avg[avg, :], axis=0)
 scaleavg_signif = wave_signif(variance, dt, scale, 2, lag1, -1, [2, 7.9], mother)
 
-# Plotting
-plt.figure(figsize=(12, 10))
+#%%
 
+# Plotting
+plt.figure(figsize=(20, 20))
+#%%
 # Plot time series
 plt.subplot(411)
 plt.plot(time, sst)
@@ -69,9 +74,9 @@ plt.xlim(xlim)
 plt.xlabel('Time (year)')
 plt.ylabel('NINO3 SST (degC)')
 plt.title('a) NINO3 Sea Surface Temperature (seasonal)')
-
+#%%
 # Contour plot wavelet power spectrum
-plt.subplot(423)
+plt.subplot()
 levels = [0.0625, 0.125, 0.25, 0.5, 1, 2, 4, 8, 16]
 Yticks = 2 ** np.arange(np.floor(np.log2(min(period))), np.ceil(np.log2(max(period))) + 1)
 plt.contourf(time, np.log2(period), np.log2(power), np.log2(levels))
@@ -83,18 +88,21 @@ plt.ylim(np.log2([min(period), max(period)]))
 plt.gca().invert_yaxis()
 plt.yticks(np.log2(Yticks), Yticks)
 plt.contour(time, np.log2(period), sig95, [-99, 1], colors='k')
-plt.plot(time, np.log2(coi), 'k')
+plt.plot(time[1:-1], np.log2(coi), 'k')
 
+#%%
 # Plot global wavelet spectrum
 plt.subplot(424)
 plt.plot(global_ws, np.log2(period))
-plt.plot(global_signif, np.log2(period), '--')
+plt.plot(global_signif[0], np.log2(period), '--')
 plt.xlabel('Power (degC^2)')
 plt.title('c) Global Wavelet Spectrum')
 plt.ylim(np.log2([min(period), max(period)]))
 plt.gca().invert_yaxis()
 plt.yticks(np.log2(Yticks), Yticks)
 plt.xlim([0, 1.25 * max(global_ws)])
+
+#%%
 
 # Plot 2--8 yr scale-average time series
 plt.subplot(413)

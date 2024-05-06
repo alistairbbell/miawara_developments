@@ -31,22 +31,42 @@ script_directory = os.path.dirname(absolute_script_path)
 # This is the absolute path of the current script
 os.chdir(script_directory)
 #%%
-# Connection details
-server_name = 'datatub'  #server descriptor
-server_ip = 'datatub.mw.iap.unibe.ch'
-username = 'tub_r'
-password = ''
-client_name = 'user'  # local machine
-share_name = 'srv'
-server_basepath = 'instruments/miawara/l2/l2_scaled/'
+credentials_file_path = '/home/alistair/.smbcredentials'
+
+#%%
+server_name = 'tank'  # Simplified name for readability
+server_ip = 'tank.mw.iap.unibe.ch'  # Extracted from the URL
+client_name = 'user'  # Assuming this remains the same
+domain = 'campus'
+share_name = 'atmosphere'  # Extracted from the URL
+server_basepath = '/instruments/miawara/l2/'  # Assuming root share access, adjust as needed
 data_folder = "../../data"
 download_folder = os.path.join(data_folder, "tmp")
 temp_file_path = os.path.join(download_folder, "temp_file.nc")
 save_output_dir = os.path.join(data_folder, "interim")
-output_file_name = 'MIAWARA_concat_H2O_2010_2023_rescaled_inc_A.nc'
+output_file_name = 'MIAWARA_concat_H2O_2022_2024_rescaled.nc'
 outFullPath = os.path.join(save_output_dir, output_file_name)
 h2o_string = 'retrieval'
 log_folder = "../../log"
+
+#%% Read credentials
+credentials = {}
+try:
+    with open(credentials_file_path, 'r') as creds_file:
+        for line in creds_file:
+            key, value = line.strip().split('=')
+            credentials[key] = value
+
+    username = credentials.get('user')
+    password = credentials.get('password')  
+    domain = credentials.get('domain') 
+    
+except FileNotFoundError:
+    print(f"Credentials file not found at {credentials_file_path}")
+    # Handle the error appropriately - exit or raise exception
+except ValueError:
+    print("Error processing credentials file. Each line must be in the format key=value.")
+    # Handle the error appropriately - exit or raise exception
 
 #%% set up error logging
 logger = logging.getLogger('my_logger')
@@ -55,18 +75,18 @@ handler = RotatingFileHandler(os.path.join(log_folder,"miawara_data_retrieve.txt
 logger.addHandler(handler)
 
 #%%#%% Retrieve the MIAWARA data from the tub server
-years = np.arange(2010,2024)
+years = np.arange(2010,2025)
 years_s = [str(i) for i in years]
 
 # Create connection to server
-conn = SMBConnection(username, password, client_name, server_name, use_ntlm_v2=True)
+conn = SMBConnection(username, password, client_name, server_name, domain=domain, use_ntlm_v2=True)
 conn.connect(server_ip)
 
 # List all files in the root of the share
 file_paths_to_merge = []
 
 #variables to drop from the xarray dataset (dataset too big if we keep them)
-vars_to_drop = ['y', 'yf', 'tau', 'J', 'frequency'] 
+vars_to_drop = ['y', 'yf', 'tau', 'J', 'frequency', 'A'] 
 
 #initialise file iteration number
 iterno = 0
@@ -76,8 +96,9 @@ for year in years_s:
     files = conn.listPath(share_name, svr_data_path)
     
     for file in files:
-        if h2o_string in file.filename and file.filename.endswith(".nc"):
-            print(os.path.join(svr_data_path, file.filename)) #for debug
+        print(file)
+        if h2o_string in file.filename and file.filename.endswith("00.nc"):
+            print(os.path.join(svr_data_path, file.filename))  # for debug
             
             if os.path.exists(temp_file_path):
                 os.remove(temp_file_path)
@@ -88,24 +109,23 @@ for year in years_s:
     
             # Load the file into xarray
             ds = xr.open_dataset(temp_file_path, decode_times=False)
-            ds_red = ds.drop_vars(vars_to_drop) #drop heavy vars
-            ds_red = ds_red.drop_vars('A') #drop heavy vars
+            ds_red = ds.drop_vars(vars_to_drop, errors='ignore')  
             
-            #if not (ds.time.dtype == np.float64 or ds.time.dtype == np.dtype('O')):
-            if iterno == 0: #if first file initialise xarray
-                concatenated_ds = ds_red
-                iterno += 1
-            else: #else try to append to existing xarray
-                try:
-                    concatenated_ds = xr.concat([concatenated_ds, ds_red], dim = 'time')
-                    iterno += 1
-                except Exception as e:
-                    print('error encountered')
-                    logger.error(traceback.format_exc())
-            ds.close() #close temporary datasets
-            ds_red.close()
+            # Load the reduced dataset into memory to avoid indexing issues
+            ds_red = ds_red.load()  # This line is crucial to avoid the IndexError
 
-#concatenated_ds.to_netcdf(outFullPath)
+            print(f"Current ds_red time shape: {ds_red.dims.get('time', 'No time dim')}")
+            if ('time' in ds_red.dims):
+                print("Attempting concatenation")
+                if iterno == 0:  # if first file, initialise xarray
+                    concatenated_ds = ds_red
+                    iterno += 1
+                else:  # else, try to append to existing xarray
+                    concatenated_ds = xr.concat([concatenated_ds, ds_red], dim='time')
+                    iterno += 1
+            ds.close()  # Close temporary datasets
+
+concatenated_ds.to_netcdf(outFullPath)
 conn.close()
 
 #%%#%% Handling of Averaging Kernel the MIAWARA data from the tub server
